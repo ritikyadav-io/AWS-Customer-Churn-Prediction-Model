@@ -161,9 +161,7 @@ useful for demonstrating real cloud/MLOps skills — follow
 
 **Ritik Yadav**
 Machine Learning Engineer & Platform Architect
-📧 ritikyadav@example.com
+📧 yadavritik2027@gmail.com
 
 
-## License
 
-MIT — see [LICENSE](LICENSE).
