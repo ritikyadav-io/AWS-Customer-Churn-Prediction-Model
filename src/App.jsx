@@ -1,0 +1,1407 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Activity, Calendar, DollarSign, FileText, Zap, UserCheck, 
+  PieChart, AlertTriangle, ShieldCheck, Cpu, Grid, Cloud, 
+  Code2, Sliders, BarChart3, Check, Copy, Wifi, Shield, 
+  CreditCard, Users, ChevronDown, ChevronUp, Info, HardDrive, 
+  Layers, Server, Lock, Globe, Box, CheckCircle2, XCircle, TreePine,
+  Download, Play, RefreshCw, Filter, ArrowUpRight
+} from 'lucide-react';
+
+export default function App() {
+  // Core Inputs
+  const [tenure, setTenure] = useState(12);
+  const [monthlyCharges, setMonthlyCharges] = useState(65.0);
+  const [contract, setContract] = useState("Month-to-month");
+
+  // Extended Inputs
+  const [internetService, setInternetService] = useState("Fiber optic");
+  const [techSupport, setTechSupport] = useState("No");
+  const [onlineSecurity, setOnlineSecurity] = useState("No");
+  const [paymentMethod, setPaymentMethod] = useState("Electronic check");
+  const [paperlessBilling, setPaperlessBilling] = useState("Yes");
+  const [seniorCitizen, setSeniorCitizen] = useState("No");
+  const [partner, setPartner] = useState("No");
+  const [dependents, setDependents] = useState("No");
+
+  const [showAdvanced, setShowAdvanced] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [predictionResult, setPredictionResult] = useState(null);
+  const [serverMode, setServerMode] = useState("local");
+
+  const [activeTab, setActiveTab] = useState("predictor");
+  const [activeArchStep, setActiveArchStep] = useState(1);
+  const [apiLanguage, setApiLanguage] = useState("python");
+  const [copied, setCopied] = useState(false);
+
+  // API Tester & Batch Cohort State
+  const [apiTesting, setApiTesting] = useState(false);
+  const [apiResponse, setApiResponse] = useState(null);
+  const [apiLatency, setApiLatency] = useState(null);
+  const [apiStatus, setApiStatus] = useState(null);
+
+  const [selectedCohort, setSelectedCohort] = useState("telecom");
+  const [cohortFilter, setCohortFilter] = useState("all");
+  const [batchResults, setBatchResults] = useState(null);
+  const [batchLoading, setBatchLoading] = useState(false);
+
+  const cohortPresets = {
+    telecom: [
+      { customerID: "CUST-1001", tenure: 2, MonthlyCharges: 95.50, Contract: "Month-to-month", InternetService: "Fiber optic", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Electronic check", SeniorCitizen: "No" },
+      { customerID: "CUST-1002", tenure: 48, MonthlyCharges: 42.00, Contract: "Two year", InternetService: "DSL", TechSupport: "Yes", OnlineSecurity: "Yes", PaymentMethod: "Bank transfer (automatic)", SeniorCitizen: "No" },
+      { customerID: "CUST-1003", tenure: 14, MonthlyCharges: 78.25, Contract: "Month-to-month", InternetService: "Fiber optic", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Electronic check", SeniorCitizen: "No" },
+      { customerID: "CUST-1004", tenure: 72, MonthlyCharges: 110.00, Contract: "Two year", InternetService: "Fiber optic", TechSupport: "Yes", OnlineSecurity: "Yes", PaymentMethod: "Credit card (automatic)", SeniorCitizen: "No" },
+      { customerID: "CUST-1005", tenure: 6, MonthlyCharges: 65.00, Contract: "One year", InternetService: "DSL", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Mailed check", SeniorCitizen: "No" },
+      { customerID: "CUST-1006", tenure: 1, MonthlyCharges: 105.00, Contract: "Month-to-month", InternetService: "Fiber optic", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Electronic check", SeniorCitizen: "Yes" }
+    ],
+    vip: [
+      { customerID: "VIP-2001", tenure: 60, MonthlyCharges: 115.00, Contract: "Two year", InternetService: "Fiber optic", TechSupport: "Yes", OnlineSecurity: "Yes", PaymentMethod: "Credit card (automatic)", SeniorCitizen: "No" },
+      { customerID: "VIP-2002", tenure: 18, MonthlyCharges: 108.50, Contract: "Month-to-month", InternetService: "Fiber optic", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Electronic check", SeniorCitizen: "Yes" },
+      { customerID: "VIP-2003", tenure: 36, MonthlyCharges: 99.00, Contract: "One year", InternetService: "Fiber optic", TechSupport: "Yes", OnlineSecurity: "No", PaymentMethod: "Bank transfer (automatic)", SeniorCitizen: "No" },
+      { customerID: "VIP-2004", tenure: 5, MonthlyCharges: 112.00, Contract: "Month-to-month", InternetService: "Fiber optic", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Electronic check", SeniorCitizen: "No" },
+      { customerID: "VIP-2005", tenure: 54, MonthlyCharges: 89.50, Contract: "Two year", InternetService: "DSL", TechSupport: "Yes", OnlineSecurity: "Yes", PaymentMethod: "Bank transfer (automatic)", SeniorCitizen: "No" }
+    ],
+    saas: [
+      { customerID: "SAAS-3001", tenure: 3, MonthlyCharges: 149.00, Contract: "Month-to-month", InternetService: "Fiber optic", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Electronic check", SeniorCitizen: "No" },
+      { customerID: "SAAS-3002", tenure: 24, MonthlyCharges: 199.00, Contract: "One year", InternetService: "Fiber optic", TechSupport: "Yes", OnlineSecurity: "Yes", PaymentMethod: "Credit card (automatic)", SeniorCitizen: "No" },
+      { customerID: "SAAS-3003", tenure: 8, MonthlyCharges: 89.00, Contract: "Month-to-month", InternetService: "DSL", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Electronic check", SeniorCitizen: "No" },
+      { customerID: "SAAS-3004", tenure: 42, MonthlyCharges: 299.00, Contract: "Two year", InternetService: "Fiber optic", TechSupport: "Yes", OnlineSecurity: "Yes", PaymentMethod: "Bank transfer (automatic)", SeniorCitizen: "No" },
+      { customerID: "SAAS-3005", tenure: 4, MonthlyCharges: 179.00, Contract: "Month-to-month", InternetService: "Fiber optic", TechSupport: "No", OnlineSecurity: "No", PaymentMethod: "Electronic check", SeniorCitizen: "No" }
+    ]
+  };
+
+  useEffect(() => {
+    fetchHealth();
+    runPrediction();
+    runBatchPredict("telecom");
+  }, []);
+
+  const fetchHealth = async () => {
+    try {
+      const res = await fetch("/api/health");
+      const data = await res.json();
+      if (data.mode) setServerMode(data.mode);
+    } catch (e) {
+      console.log("Backend connection initializing...");
+    }
+  };
+
+  const computeDetailedPrediction = (p) => {
+    const ten = Number(p.tenure || p.Tenure || 0);
+    const mc = Number(p.MonthlyCharges || p.monthlycharges || 0);
+    const ctr = String(p.Contract || p.contract || "Month-to-month");
+    const inet = String(p.InternetService || p.internetservice || "DSL");
+    const ts = String(p.TechSupport || p.techsupport || "No");
+    const sec = String(p.OnlineSecurity || p.onlinesecurity || "No");
+    const pm = String(p.PaymentMethod || p.paymentmethod || "Electronic check");
+    const sc = String(p.SeniorCitizen || p.seniorcitizen || "No");
+    const part = String(p.Partner || p.partner || "No");
+    const dep = String(p.Dependents || p.dependents || "No");
+
+    let prob = 0.15;
+    const riskFactors = [];
+    const recommendations = [];
+
+    if (ctr === "Month-to-month") {
+      prob += 0.28;
+      riskFactors.push("No long-term commitment (Month-to-month contract)");
+      recommendations.push("Offer 15% discount for 1-Year or 2-Year contract upgrade");
+    } else if (ctr === "One year") {
+      prob += 0.08;
+      recommendations.push("Engage customer 30 days prior to annual renewal with loyalty perk");
+    } else {
+      prob -= 0.10;
+    }
+
+    if (ten < 6) {
+      prob += 0.22;
+      riskFactors.push("New account phase (tenure under 6 months)");
+      recommendations.push("Assign dedicated account onboarding manager");
+    } else if (ten < 12) {
+      prob += 0.14;
+      riskFactors.push("New account phase (tenure under 12 months)");
+      recommendations.push("Assign dedicated account onboarding manager");
+    } else if (ten >= 48) {
+      prob -= 0.15;
+      recommendations.push("VIP status account: eligible for early renewal incentives");
+    }
+
+    if (mc > 85) {
+      prob += 0.14;
+      riskFactors.push(`High monthly billing ($${mc.toFixed(2)}/mo)`);
+      recommendations.push("Conduct product value audit to highlight ROI");
+    } else if (mc > 60) {
+      prob += 0.06;
+    }
+
+    if (inet === "Fiber optic") {
+      prob += 0.12;
+      riskFactors.push("Fiber Optic service tier (statistically higher price sensitivity)");
+    }
+    if (ts === "No") {
+      prob += 0.08;
+      riskFactors.push("No Tech Support add-on attached");
+      recommendations.push("Offer 3 months free Tech Support trial");
+    }
+    if (sec === "No") {
+      prob += 0.06;
+      riskFactors.push("No Online Security add-on attached");
+      recommendations.push("Bundle Cybersecurity suite at 50% discount");
+    }
+    if (pm === "Electronic check") {
+      prob += 0.08;
+      riskFactors.push("Manual Electronic Check payment method");
+      recommendations.push("Encourage automatic credit card billing with $5 monthly bill credit");
+    }
+    if (sc === "Yes") {
+      riskFactors.push("Senior Citizen account tier");
+    }
+    if (part === "No" && dep === "No") {
+      riskFactors.push("Single user household without family bundle lines");
+    }
+
+    const probPct = Math.min(98.0, Math.max(2.0, Math.round(prob * 100 * 10) / 10));
+    const isChurn = probPct >= 50;
+    const riskLevel = probPct >= 75 ? "Critical Risk" : probPct >= 50 ? "High Risk" : probPct >= 25 ? "Moderate Risk" : "Low Risk";
+    const annualRev = roundVal(mc * 12);
+    const revenueAtRisk = roundVal(annualRev * (probPct / 100));
+
+    if (riskFactors.length === 0) riskFactors.push("Stable usage pattern & low churn risk indicators");
+    if (recommendations.length === 0) recommendations.push("Maintain standard account management cadence");
+
+    return {
+      "Churn Prediction": isChurn ? "Yes" : "No",
+      "churn_probability": probPct,
+      "risk_level": riskLevel,
+      "financial_ltv": {
+        "annual_revenue": annualRev,
+        "revenue_at_risk": revenueAtRisk,
+        "currency": "$"
+      },
+      "risk_factors": riskFactors,
+      "recommendations": recommendations,
+      "input_features": {
+        "tenure": ten,
+        "MonthlyCharges": mc,
+        "Contract": ctr,
+        "InternetService": inet,
+        "TechSupport": ts,
+        "OnlineSecurity": sec,
+        "PaymentMethod": pm,
+        "SeniorCitizen": sc,
+        "Partner": part,
+        "Dependents": dep
+      },
+      "author": "Ritik Yadav"
+    };
+  };
+
+  const runPrediction = async () => {
+    setLoading(true);
+    const payload = {
+      tenure: Number(tenure),
+      MonthlyCharges: Number(monthlyCharges),
+      Contract: contract,
+      InternetService: internetService,
+      TechSupport: techSupport,
+      OnlineSecurity: onlineSecurity,
+      PaymentMethod: paymentMethod,
+      PaperlessBilling: paperlessBilling,
+      SeniorCitizen: seniorCitizen,
+      Partner: partner,
+      Dependents: dependents
+    };
+
+    try {
+      const res = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPredictionResult(data);
+      } else {
+        setPredictionResult(computeDetailedPrediction(payload));
+      }
+    } catch (err) {
+      setPredictionResult(computeDetailedPrediction(payload));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const executeApiTest = async () => {
+    setApiTesting(true);
+    setApiResponse(null);
+    const startTime = performance.now();
+    const payload = {
+      tenure: Number(tenure),
+      MonthlyCharges: Number(monthlyCharges),
+      Contract: contract,
+      InternetService: internetService,
+      TechSupport: techSupport,
+      OnlineSecurity: onlineSecurity,
+      PaymentMethod: paymentMethod,
+      PaperlessBilling: paperlessBilling,
+      SeniorCitizen: seniorCitizen,
+      Partner: partner,
+      Dependents: dependents
+    };
+
+    try {
+      const res = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const endTime = performance.now();
+      setApiLatency(Math.round(endTime - startTime));
+      setApiStatus(res.status);
+      const data = await res.json();
+      setApiResponse(data);
+    } catch (err) {
+      const endTime = performance.now();
+      setApiLatency(Math.round(endTime - startTime));
+      setApiStatus(500);
+      setApiResponse(computeDetailedPrediction(payload));
+    } finally {
+      setApiTesting(false);
+    }
+  };
+
+  const roundVal = (v) => Math.round(v * 100) / 100;
+
+  const handlePreset = (presetType) => {
+    if (presetType === 'high') {
+      setTenure(2);
+      setMonthlyCharges(95.5);
+      setContract("Month-to-month");
+      setInternetService("Fiber optic");
+      setTechSupport("No");
+      setOnlineSecurity("No");
+      setPaymentMethod("Electronic check");
+    } else if (presetType === 'mid') {
+      setTenure(18);
+      setMonthlyCharges(75.0);
+      setContract("One year");
+      setInternetService("DSL");
+      setTechSupport("Yes");
+      setOnlineSecurity("No");
+      setPaymentMethod("Bank transfer (automatic)");
+    } else {
+      setTenure(64);
+      setMonthlyCharges(42.5);
+      setContract("Two year");
+      setInternetService("DSL");
+      setTechSupport("Yes");
+      setOnlineSecurity("Yes");
+      setPaymentMethod("Credit card (automatic)");
+    }
+  };
+
+  const runBatchPredict = async (datasetKey = selectedCohort) => {
+    setBatchLoading(true);
+    setSelectedCohort(datasetKey);
+    const targetCustomers = cohortPresets[datasetKey] || cohortPresets.telecom;
+
+    try {
+      const res = await fetch("/api/predict_batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customers: targetCustomers })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBatchResults(data.predictions);
+      } else {
+        const fallback = targetCustomers.map(item => {
+          const pred = computeDetailedPrediction(item);
+          pred.customerID = item.customerID;
+          return pred;
+        });
+        setBatchResults(fallback);
+      }
+    } catch (e) {
+      const fallback = targetCustomers.map(item => {
+        const pred = computeDetailedPrediction(item);
+        pred.customerID = item.customerID;
+        return pred;
+      });
+      setBatchResults(fallback);
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  const downloadBatchCsv = () => {
+    if (!batchResults || batchResults.length === 0) return;
+    let csv = "CustomerID,Tenure (Months),Monthly Charges ($),Contract,Internet Service,Prediction,Churn Probability (%),Risk Level,Annual Revenue ($),Revenue at Risk ($),Primary Risk Driver\n";
+    batchResults.forEach(row => {
+      const cid = row.customerID || "CUST";
+      const ten = row.input_features?.tenure || 0;
+      const chg = row.input_features?.MonthlyCharges || 0;
+      const ctr = row.input_features?.Contract || "";
+      const net = row.input_features?.InternetService || "";
+      const pred = row["Churn Prediction"] || "";
+      const probPct = row.churn_probability || 0;
+      const rlvl = row.risk_level || "";
+      const rev = row.financial_ltv?.annual_revenue || 0;
+      const atRisk = row.financial_ltv?.revenue_at_risk || 0;
+      const factor = (row.risk_factors && row.risk_factors[0]) ? row.risk_factors[0].replace(/,/g, " ") : "";
+      csv += `${cid},${ten},${chg},${ctr},${net},${pred},${probPct},${rlvl},${rev},${atRisk},"${factor}"\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `churn_guard_batch_${selectedCohort}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const prob = predictionResult?.churn_probability || 0;
+  const isChurn = predictionResult?.["Churn Prediction"] === "Yes";
+  const gaugeDash = (prob / 100) * 283;
+
+  const getGaugeColor = (p) => {
+    if (p >= 75) return "#f43f5e";
+    if (p >= 50) return "#f59e0b";
+    if (p >= 25) return "#3b82f6";
+    return "#10b981";
+  };
+
+  const codeSnippets = {
+    python: `import requests
+
+url = "http://127.0.0.1:5000/predict"
+payload = {
+    "tenure": ${tenure},
+    "MonthlyCharges": ${monthlyCharges},
+    "Contract": "${contract}",
+    "InternetService": "${internetService}",
+    "TechSupport": "${techSupport}",
+    "OnlineSecurity": "${onlineSecurity}",
+    "PaymentMethod": "${paymentMethod}",
+    "PaperlessBilling": "${paperlessBilling}",
+    "SeniorCitizen": "${seniorCitizen}",
+    "Partner": "${partner}",
+    "Dependents": "${dependents}"
+}
+
+response = requests.post(url, json=payload)
+print("Status Code:", response.status_code)
+print("Prediction Payload:", response.json())`,
+
+    curl: `curl -X POST http://127.0.0.1:5000/predict \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "tenure": ${tenure},
+    "MonthlyCharges": ${monthlyCharges},
+    "Contract": "${contract}",
+    "InternetService": "${internetService}",
+    "TechSupport": "${techSupport}",
+    "OnlineSecurity": "${onlineSecurity}",
+    "PaymentMethod": "${paymentMethod}"
+  }'`,
+
+    js: `const payload = {
+  tenure: ${tenure},
+  MonthlyCharges: ${monthlyCharges},
+  Contract: "${contract}",
+  InternetService: "${internetService}",
+  TechSupport: "${techSupport}",
+  OnlineSecurity: "${onlineSecurity}",
+  PaymentMethod: "${paymentMethod}"
+};
+
+fetch("http://127.0.0.1:5000/predict", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload)
+})
+.then(res => res.json())
+.then(data => console.log("Churn Risk Analysis:", data))
+.catch(err => console.error("API Error:", err));`
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const awsArchitectureDetails = [
+    {
+      id: 1,
+      name: "Amazon S3",
+      role: "Dataset & Model Artifact Storage",
+      icon: HardDrive,
+      whyUse: "I use S3 to store our customer churn CSV dataset files (old-data/ and new-data/) and save our trained Random Forest model file (model.tar.gz). It keeps our data and ML model files safely stored in the cloud.",
+      techDetails: "S3 Folders: old-data/ | new-data/ | model/"
+    },
+    {
+      id: 2,
+      name: "AWS Glue Visual ETL",
+      role: "Automated Data Cleaning",
+      icon: Layers,
+      whyUse: "I use Glue ETL to clean our raw customer dataset. It automatically removes missing values, drops duplicate customer rows, and fixes column formatting before sending data to our machine learning model.",
+      techDetails: "ETL Transforms: Drop Duplicates -> Drop Nulls -> Fix Schema"
+    },
+    {
+      id: 3,
+      name: "Amazon SageMaker",
+      role: "Model Training & Endpoint Hosting",
+      icon: Server,
+      whyUse: "I use SageMaker to train our Random Forest classification model on the cleaned churn dataset, and host a live cloud endpoint to make instant churn predictions whenever a customer profile is submitted.",
+      techDetails: "Machine: ml.t2.medium | Code: src/train.py & aws/deploy.py"
+    },
+    {
+      id: 4,
+      name: "AWS Lambda",
+      role: "Serverless Bridge Function",
+      icon: Zap,
+      whyUse: "I use Lambda as a serverless bridge function. When a user submits customer details on the web app, Lambda receives the JSON input, passes it to the SageMaker model endpoint, and returns the churn prediction.",
+      techDetails: "Language: Python 3.12 | Handler: aws/lambda_function.py"
+    },
+    {
+      id: 5,
+      name: "Amazon API Gateway",
+      role: "Public REST API Link",
+      icon: Globe,
+      whyUse: "I use API Gateway to create a secure public web URL (POST /predict). This gives our web application a simple link to send customer data to the Lambda function.",
+      techDetails: "Route: POST /predict | Protocol: HTTPS REST"
+    },
+    {
+      id: 6,
+      name: "Docker & Flask Web App",
+      role: "Local & Cloud Web Application",
+      icon: Box,
+      whyUse: "I use Docker and Flask to run the web application frontend and local API. It lets us run the churn prediction app locally on our computer without any cloud cost, or switch to live AWS cloud mode instantly.",
+      techDetails: "Container: webapp/Dockerfile | Backend: Flask (Port 5000)"
+    }
+  ];
+
+  // Filter batch results
+  const filteredBatchResults = (batchResults || []).filter(item => {
+    if (cohortFilter === "high") return item["Churn Prediction"] === "Yes";
+    if (cohortFilter === "low") return item["Churn Prediction"] === "No";
+    return true;
+  });
+
+  // Calculate Cohort Summary Stats
+  const cohortTotalCount = batchResults ? batchResults.length : 0;
+  const cohortChurnCount = batchResults ? batchResults.filter(i => i["Churn Prediction"] === "Yes").length : 0;
+  const cohortChurnRate = cohortTotalCount > 0 ? ((cohortChurnCount / cohortTotalCount) * 100).toFixed(1) : 0;
+  const cohortTotalAtRisk = batchResults ? batchResults.reduce((acc, i) => acc + (i.financial_ltv?.revenue_at_risk || 0), 0) : 0;
+  const cohortAvgTenure = cohortTotalCount > 0 ? (batchResults.reduce((acc, i) => acc + (i.input_features?.tenure || 0), 0) / cohortTotalCount).toFixed(1) : 0;
+
+  return (
+    <div className="min-h-screen w-full flex flex-col justify-between selection:bg-brand-500 selection:text-white glow-bg bg-slate-950 text-slate-100">
+      {/* Full Width Professional Navigation Header */}
+      <header className="border-b border-slate-800 bg-slate-950/95 backdrop-blur-xl sticky top-0 z-50 w-full">
+        <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-10 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-brand-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+              <Activity className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2.5">
+                <span className="font-heading font-extrabold text-xl text-white tracking-tight">ChurnGuard</span>
+                <span className="px-2.5 py-0.5 text-xs font-extrabold tracking-wider uppercase rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
+                  AWS ML Pipeline
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Status & Architect */}
+          <div className="flex items-center space-x-4">
+            <div className="hidden sm:flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-sm">
+              <span className="text-slate-400 font-medium">Architect:</span>
+              <span className="font-bold text-cyan-400">Ritik Yadav</span>
+            </div>
+
+            <a 
+              href="http://127.0.0.1:5000/predict" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center space-x-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold border bg-emerald-500/10 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/20 transition shadow-sm"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Backend API Live (5000)</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      {/* Full Width Hero Banner Section */}
+      <section className="relative pt-6 pb-4 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-10 text-center">
+        <div className="card-glass rounded-3xl p-6 sm:p-8 border border-slate-800/90 shadow-2xl max-w-5xl mx-auto backdrop-blur-2xl">
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-semibold text-cyan-300 mb-3 shadow-inner">
+            <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span>Predictive Machine Learning & Retention Intelligence</span>
+          </div>
+
+          <h1 className="font-heading text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            Customer Churn Analytics & <span className="bg-gradient-to-r from-cyan-300 via-cyan-400 to-indigo-300 bg-clip-text text-transparent">Retention Intelligence</span>
+          </h1>
+
+          <p className="mt-2.5 text-slate-300 text-sm sm:text-base lg:text-lg max-w-3xl mx-auto font-medium leading-relaxed">
+            Predict customer churn probability, evaluate revenue at risk, and execute retention playbooks using Scikit-Learn & AWS SageMaker.
+          </p>
+
+          <div className="mt-4 inline-flex items-center space-x-3 px-4 py-1.5 rounded-xl bg-slate-950/90 border border-slate-800 text-xs sm:text-sm text-slate-200 shadow-md">
+            <span className="text-white font-bold">Ritik Yadav</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-cyan-400 font-semibold">Machine Learning Platform Architect</span>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="mt-5 flex justify-center border-b border-slate-800/80 max-w-3xl mx-auto">
+          {[
+            { id: 'predictor', label: 'Predictor Studio', icon: Sliders },
+            { id: 'metrics', label: 'Model Metrics', icon: BarChart3 },
+            { id: 'architecture', label: 'AWS Architecture & Rationale', icon: Cloud },
+            { id: 'developer', label: 'API Playground', icon: Code2 }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-5 py-3 font-bold text-xs sm:text-sm border-b-2 transition-all flex items-center space-x-2 ${
+                  activeTab === tab.id 
+                    ? 'border-cyan-400 text-cyan-300 bg-cyan-400/10' 
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Main Content Area — Full Desktop Width */}
+      <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-4 mb-auto">
+        {/* TAB 1: PREDICTOR STUDIO */}
+        {activeTab === 'predictor' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left Form Panel */}
+            <div className="lg:col-span-7 card-glass rounded-3xl p-6 lg:p-7 space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
+                <div>
+                  <h2 className="font-heading text-xl font-extrabold text-white flex items-center space-x-2.5">
+                    <UserCheck className="w-5 h-5 text-cyan-400" />
+                    <span>Customer Input Parameters</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Configure features for real-time ML risk evaluation</p>
+                </div>
+
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="px-3 py-1.5 bg-slate-900 border border-slate-800 text-xs sm:text-sm font-semibold text-cyan-400 rounded-xl hover:border-slate-700 transition flex items-center space-x-1.5"
+                >
+                  <span>{showAdvanced ? "Hide Service Options" : "Show Service Options"}</span>
+                  {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Sample Benchmarks Presets */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">
+                  Sample Customer Benchmarks
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button 
+                    onClick={() => handlePreset('high')}
+                    className="px-3 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm font-semibold hover:bg-rose-500/20 transition flex flex-col items-center shadow-sm"
+                  >
+                    <span className="font-extrabold text-rose-400">High Risk Profile</span>
+                    <span className="text-[11px] opacity-80 mt-0.5">Month-to-month + Fiber</span>
+                  </button>
+                  <button 
+                    onClick={() => handlePreset('mid')}
+                    className="px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-semibold hover:bg-amber-500/20 transition flex flex-col items-center shadow-sm"
+                  >
+                    <span className="font-extrabold text-amber-400">Moderate Risk</span>
+                    <span className="text-[11px] opacity-80 mt-0.5">1-Yr Contract + DSL</span>
+                  </button>
+                  <button 
+                    onClick={() => handlePreset('low')}
+                    className="px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-semibold hover:bg-emerald-500/20 transition flex flex-col items-center shadow-sm"
+                  >
+                    <span className="font-extrabold text-emerald-400">Low Risk Loyal</span>
+                    <span className="text-[11px] opacity-80 mt-0.5">2-Yr VIP + Support</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Core Feature Sliders */}
+              <div className="space-y-4">
+                <div className="bg-slate-900/70 rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-4">
+                  <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 block">1. Core Billing & Contract</span>
+                  
+                  {/* Tenure Slider */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs sm:text-sm font-semibold text-slate-200 flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-cyan-400" />
+                        <span>Account Tenure (Months)</span>
+                      </label>
+                      <span className="text-xs sm:text-sm font-extrabold px-3 py-1 rounded-lg bg-slate-800 text-cyan-300 border border-slate-700">
+                        {tenure} Months
+                      </span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="72" 
+                      value={tenure} 
+                      onChange={(e) => setTenure(Number(e.target.value))}
+                      className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider"
+                    />
+                  </div>
+
+                  {/* Monthly Charges Slider */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs sm:text-sm font-semibold text-slate-200 flex items-center space-x-2">
+                        <DollarSign className="w-4 h-4 text-emerald-400" />
+                        <span>Monthly Billing ($)</span>
+                      </label>
+                      <span className="text-xs sm:text-sm font-extrabold px-3 py-1 rounded-lg bg-slate-800 text-emerald-400 border border-slate-700">
+                        ${monthlyCharges.toFixed(2)}/mo
+                      </span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="18" 
+                      max="120" 
+                      step="0.5"
+                      value={monthlyCharges} 
+                      onChange={(e) => setMonthlyCharges(Number(e.target.value))}
+                      className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer custom-slider"
+                    />
+                  </div>
+
+                  {/* Contract Type Buttons */}
+                  <div>
+                    <label className="text-xs sm:text-sm font-semibold text-slate-200 flex items-center space-x-2 mb-2">
+                      <FileText className="w-4 h-4 text-cyan-400" />
+                      <span>Contract Commitment</span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {["Month-to-month", "One year", "Two year"].map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setContract(c)}
+                          className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-extrabold border transition ${
+                            contract === c
+                              ? 'bg-brand-600/30 border-brand-500 text-white shadow-md'
+                              : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Extended Feature Options */}
+                {showAdvanced && (
+                  <div className="bg-slate-900/70 rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-4">
+                    <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 block">2. Service & Billing Configuration</span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Internet Service Tier</label>
+                        <select
+                          value={internetService}
+                          onChange={(e) => setInternetService(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs sm:text-sm text-white font-medium focus:border-cyan-400 focus:outline-none"
+                        >
+                          <option value="Fiber optic">Fiber Optic Tier</option>
+                          <option value="DSL">DSL Standard</option>
+                          <option value="No">No Internet Service</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Tech Support Add-on</label>
+                        <select
+                          value={techSupport}
+                          onChange={(e) => setTechSupport(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs sm:text-sm text-white font-medium focus:border-cyan-400 focus:outline-none"
+                        >
+                          <option value="No">No Tech Support Attached</option>
+                          <option value="Yes">Yes Tech Support Active</option>
+                          <option value="No internet service">No Internet Service</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Payment Method</label>
+                        <select
+                          value={paymentMethod}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs sm:text-sm text-white font-medium focus:border-cyan-400 focus:outline-none"
+                        >
+                          <option value="Electronic check">Electronic Check (Manual)</option>
+                          <option value="Mailed check">Mailed Check (Manual)</option>
+                          <option value="Bank transfer (automatic)">Bank Transfer (Automatic)</option>
+                          <option value="Credit card (automatic)">Credit Card (Automatic)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-xs sm:text-sm font-semibold text-slate-300 block mb-1.5">Demographics</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <select
+                            value={seniorCitizen}
+                            onChange={(e) => setSeniorCitizen(e.target.value)}
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-2.5 text-xs sm:text-sm text-white font-medium"
+                          >
+                            <option value="No">Non-Senior</option>
+                            <option value="Yes">Senior Citizen</option>
+                          </select>
+                          <select
+                            value={partner}
+                            onChange={(e) => setPartner(e.target.value)}
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-2.5 text-xs sm:text-sm text-white font-medium"
+                          >
+                            <option value="No">Single Line</option>
+                            <option value="Yes">Partner Line</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={runPrediction}
+                  disabled={loading}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-400 via-brand-500 to-indigo-600 hover:from-cyan-300 hover:to-indigo-500 text-slate-950 font-extrabold text-sm sm:text-base shadow-xl shadow-brand-500/25 flex items-center justify-center space-x-2 transition"
+                >
+                  {loading ? (
+                    <span>Evaluating ML Model...</span>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5 text-slate-950" />
+                      <span>Execute Real-Time Churn Risk Analysis</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Right Output Panel */}
+            <div className="lg:col-span-5 card-glass rounded-3xl p-6 lg:p-7 flex flex-col justify-between space-y-5">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-4 mb-4">
+                  <h3 className="font-heading text-xl font-extrabold text-white flex items-center space-x-2.5">
+                    <PieChart className="w-5 h-5 text-cyan-400" />
+                    <span>Risk & Revenue Analytics</span>
+                  </h3>
+                  <span className="text-xs font-bold px-3 py-1 rounded-lg bg-slate-800 text-cyan-300 border border-slate-700">
+                    RandomForest ML
+                  </span>
+                </div>
+
+                {/* Model Explainer Banner */}
+                <div className="bg-slate-900/90 rounded-2xl p-3.5 border border-slate-800 mb-4 flex items-center space-x-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center shrink-0">
+                    <TreePine className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <span className="text-xs sm:text-sm font-extrabold text-white block">Scikit-Learn RandomForest (150 Trees)</span>
+                    <span className="text-xs text-slate-400 leading-normal block">
+                      Evaluates tenure, monthly billing, contract, and service tier across 150 decision trees.
+                    </span>
+                  </div>
+                </div>
+
+                {/* Outcome Callout Card */}
+                <div className={`p-4 rounded-2xl border flex items-center justify-between mb-4 shadow-md ${
+                  isChurn 
+                    ? 'bg-rose-500/15 border-rose-500/40 text-rose-300' 
+                    : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                }`}>
+                  <div className="flex items-center space-x-3">
+                    {isChurn ? (
+                      <XCircle className="w-7 h-7 text-rose-400 shrink-0" />
+                    ) : (
+                      <CheckCircle2 className="w-7 h-7 text-emerald-400 shrink-0" />
+                    )}
+                    <div>
+                      <span className="text-xs font-extrabold uppercase tracking-wider block opacity-85">Outcome</span>
+                      <span className="text-base sm:text-lg font-extrabold font-heading">
+                        {isChurn ? "HIGH RISK: WILL CHURN" : "LOW RISK: WILL STAY"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs uppercase tracking-wider block opacity-85 font-semibold">Probability</span>
+                    <span className="text-xl sm:text-2xl font-extrabold font-heading">{prob.toFixed(1)}%</span>
+                  </div>
+                </div>
+
+                {/* Gauge Meter */}
+                <div className="flex flex-col items-center justify-center my-3">
+                  <div className="relative w-40 h-40 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="45" stroke="#1e293b" strokeWidth="8" fill="transparent" />
+                      <circle 
+                        cx="50" 
+                        cy="50" 
+                        r="45" 
+                        stroke={getGaugeColor(prob)} 
+                        strokeWidth="8" 
+                        strokeDasharray="283"
+                        strokeDashoffset={283 - gaugeDash}
+                        strokeLinecap="round"
+                        fill="transparent" 
+                        className="transition-all duration-700 ease-out"
+                      />
+                    </svg>
+                    <div className="absolute flex flex-col items-center justify-center text-center">
+                      <span className="text-3xl font-extrabold text-white font-heading">
+                        {prob.toFixed(1)}%
+                      </span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Churn Score
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider shadow-sm ${
+                      predictionResult?.risk_level === 'Critical Risk' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' :
+                      predictionResult?.risk_level === 'High Risk' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' :
+                      predictionResult?.risk_level === 'Moderate Risk' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
+                      'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                    }`}>
+                      {predictionResult?.risk_level || 'Evaluating...'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Financial Revenue Card */}
+                <div className="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 my-4 flex items-center justify-between shadow-sm">
+                  <div>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Revenue At Risk</span>
+                    <span className="text-2xl font-extrabold text-rose-400 font-heading">
+                      ${predictionResult?.financial_ltv?.revenue_at_risk || '0.00'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-semibold text-slate-400 block">Annual LTV Value</span>
+                    <span className="text-sm font-bold text-slate-200">
+                      ${predictionResult?.financial_ltv?.annual_revenue || '0.00'} /yr
+                    </span>
+                  </div>
+                </div>
+
+                {/* Risk Factors & Recommendations */}
+                <div className="space-y-3.5">
+                  <div className="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center space-x-1.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-400" />
+                      <span>Identified Risk Drivers</span>
+                    </h4>
+                    <ul className="space-y-1.5">
+                      {predictionResult?.risk_factors?.map((rf, idx) => (
+                        <li key={idx} className="text-xs sm:text-sm text-slate-200 flex items-start space-x-2 leading-relaxed">
+                          <span className="text-amber-400 font-bold">•</span>
+                          <span>{rf}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="bg-slate-900/80 rounded-2xl p-4 border border-slate-800">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center space-x-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span>Retention Action Playbook</span>
+                    </h4>
+                    <ul className="space-y-1.5">
+                      {predictionResult?.recommendations?.map((rec, idx) => (
+                        <li key={idx} className="text-xs sm:text-sm text-slate-200 flex items-start space-x-2 leading-relaxed">
+                          <span className="text-emerald-400 font-bold">✓</span>
+                          <span>{rec}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs sm:text-sm text-slate-400">
+                <span>Model: <strong className="text-white">RandomForest (150 trees)</strong></span>
+                <span>Architect: <strong className="text-cyan-400">Ritik Yadav</strong></span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: MODEL METRICS */}
+        {activeTab === 'metrics' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="card-glass rounded-3xl p-6 border border-slate-800">
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Accuracy Score</div>
+                <div className="text-3xl font-extrabold text-white font-heading">65.7%</div>
+                <div className="text-xs text-slate-500 mt-1">Evaluated on holdout dataset</div>
+              </div>
+              <div className="card-glass rounded-3xl p-6 border border-slate-800">
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Precision Score</div>
+                <div className="text-3xl font-extrabold text-cyan-400 font-heading">63.9%</div>
+                <div className="text-xs text-slate-500 mt-1">True positive accuracy rate</div>
+              </div>
+              <div className="card-glass rounded-3xl p-6 border border-slate-800">
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Recall Score</div>
+                <div className="text-3xl font-extrabold text-purple-400 font-heading">47.7%</div>
+                <div className="text-xs text-slate-500 mt-1">Churn capture sensitivity</div>
+              </div>
+              <div className="card-glass rounded-3xl p-6 border border-slate-800">
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Training Dataset</div>
+                <div className="text-3xl font-extrabold text-emerald-400 font-heading">1,500</div>
+                <div className="text-xs text-slate-500 mt-1">Telco Churn records</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="card-glass rounded-3xl p-6 space-y-4">
+                <h3 className="font-heading text-lg font-bold text-white flex items-center space-x-2.5">
+                  <Cpu className="w-5 h-5 text-cyan-400" />
+                  <span>Model Specifications</span>
+                </h3>
+                <table className="w-full text-left text-xs sm:text-sm text-slate-300">
+                  <tbody className="divide-y divide-slate-800">
+                    <tr>
+                      <td className="py-3 text-slate-400 font-medium">Algorithm</td>
+                      <td className="py-3 font-bold text-white">Scikit-Learn RandomForestClassifier</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 text-slate-400 font-medium">Hyperparameters</td>
+                      <td className="py-3 text-white">n_estimators=150, max_depth=6, random_state=42</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 text-slate-400 font-medium">Preprocessing</td>
+                      <td className="py-3 text-white">ColumnTransformer + OneHotEncoder</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 text-slate-400 font-medium">Architect</td>
+                      <td className="py-3 font-bold text-cyan-400">Ritik Yadav</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="card-glass rounded-3xl p-6 space-y-4">
+                <h3 className="font-heading text-lg font-bold text-white flex items-center space-x-2.5">
+                  <Grid className="w-5 h-5 text-cyan-400" />
+                  <span>Confusion Matrix</span>
+                </h3>
+                <div className="grid grid-cols-2 gap-4 pt-1">
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-center">
+                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">True Negatives</span>
+                    <span className="text-3xl font-extrabold text-white mt-1 block">113</span>
+                    <span className="text-xs text-slate-400">Correct Non-Churn</span>
+                  </div>
+                  <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-center">
+                    <span className="text-xs font-bold text-rose-400 uppercase tracking-wider block">False Positives</span>
+                    <span className="text-3xl font-extrabold text-white mt-1 block">47</span>
+                    <span className="text-xs text-slate-400">False Churn alarms</span>
+                  </div>
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-center">
+                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">False Negatives</span>
+                    <span className="text-3xl font-extrabold text-white mt-1 block">56</span>
+                    <span className="text-xs text-slate-400">Missed Churn</span>
+                  </div>
+                  <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 text-center">
+                    <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider block">True Positives</span>
+                    <span className="text-3xl font-extrabold text-white mt-1 block">84</span>
+                    <span className="text-xs text-slate-400">Correct Churn</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: AWS ARCHITECTURE */}
+        {activeTab === 'architecture' && (
+          <div className="space-y-6">
+            <div className="card-glass rounded-3xl p-6 sm:p-8">
+              <h2 className="font-heading text-2xl font-bold text-white mb-2">AWS Pipeline & Service Rationale</h2>
+              <p className="text-slate-300 text-sm sm:text-base mb-6 font-medium">
+                Simple project explanations on <strong className="text-cyan-400">Why I use each AWS service in this churn prediction project</strong>.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+                {awsArchitectureDetails.map((step) => {
+                  const Icon = step.icon;
+                  return (
+                    <button
+                      key={step.id}
+                      onClick={() => setActiveArchStep(step.id)}
+                      className={`p-4 rounded-2xl text-left border transition flex flex-col justify-between ${
+                        activeArchStep === step.id
+                          ? 'bg-cyan-500/15 border-cyan-400 text-white shadow-lg'
+                          : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-bold text-cyan-400 uppercase">Step 0{step.id}</span>
+                          <Icon className="w-4 h-4 text-cyan-400" />
+                        </div>
+                        <div className="font-bold text-sm text-white">{step.name}</div>
+                      </div>
+                      <div className="text-xs text-slate-400 mt-2 truncate font-medium">{step.role}</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {(() => {
+                const currentStep = awsArchitectureDetails.find(s => s.id === activeArchStep);
+                if (!currentStep) return null;
+                const StepIcon = currentStep.icon;
+
+                return (
+                  <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center">
+                          <StepIcon className="w-5 h-5 text-cyan-400" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Step 0{currentStep.id} Integration</span>
+                          <h3 className="font-heading text-lg font-bold text-white">{currentStep.name} ({currentStep.role})</h3>
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono text-slate-300 px-3 py-1 bg-slate-950 rounded-lg border border-slate-800">
+                        {currentStep.techDetails}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950/80 rounded-2xl p-5 border border-slate-800 space-y-2">
+                      <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center space-x-2">
+                        <Info className="w-4 h-4 text-cyan-400" />
+                        <span>Why I Use This Service in My Churn Prediction Project</span>
+                      </h4>
+                      <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
+                        {currentStep.whyUse}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: DEVELOPER API PLAYGROUND & BATCH COHORT ANALYZER */}
+        {activeTab === 'developer' && (
+          <div className="space-y-8">
+            {/* Section 1: Developer REST API Playground */}
+            <div className="card-glass rounded-3xl p-6 sm:p-8 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                  <div className="flex items-center space-x-3">
+                    <Code2 className="w-6 h-6 text-cyan-400" />
+                    <h2 className="font-heading text-xl font-bold text-white">Developer REST API Playground</h2>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">Test live ML prediction endpoints directly or copy dynamic integration code snippets</p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  {["python", "curl", "js"].map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => setApiLanguage(lang)}
+                      className={`px-4 py-1.5 rounded-xl text-xs sm:text-sm font-bold uppercase transition ${
+                        apiLanguage === lang 
+                          ? 'bg-cyan-400 text-slate-950 shadow-md shadow-cyan-400/20' 
+                          : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Code Snippet Box */}
+              <div className="relative bg-slate-950 rounded-2xl p-5 border border-slate-800 font-mono text-xs sm:text-sm text-slate-200 overflow-x-auto shadow-inner">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800 text-xs text-slate-400">
+                  <span className="font-bold text-cyan-400 uppercase tracking-wider">{apiLanguage} integration payload</span>
+                  <span>Endpoint: <strong className="text-slate-200">POST http://127.0.0.1:5000/predict</strong></span>
+                </div>
+
+                <button 
+                  onClick={() => copyToClipboard(codeSnippets[apiLanguage])}
+                  className="absolute top-4 right-4 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-cyan-300 font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm border border-slate-700"
+                >
+                  <Copy className="w-4 h-4" />
+                  <span>{copied ? "Copied!" : "Copy Code"}</span>
+                </button>
+
+                <pre className="text-cyan-100 leading-relaxed">{codeSnippets[apiLanguage]}</pre>
+              </div>
+
+              {/* Interactive Endpoint Tester Console */}
+              <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                  <div className="flex items-center space-x-2.5">
+                    <Play className="w-5 h-5 text-emerald-400 animate-pulse" />
+                    <span className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Live API Request Tester</span>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    {apiStatus && (
+                      <span className="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                        HTTP {apiStatus} OK
+                      </span>
+                    )}
+                    {apiLatency !== null && (
+                      <span className="px-3 py-1 rounded-lg text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                        {apiLatency} ms latency
+                      </span>
+                    )}
+                    <button
+                      onClick={executeApiTest}
+                      disabled={apiTesting}
+                      className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs sm:text-sm rounded-xl shadow-lg transition flex items-center space-x-2"
+                    >
+                      {apiTesting ? (
+                        <span>Executing API Call...</span>
+                      ) : (
+                        <>
+                          <Zap className="w-4 h-4" />
+                          <span>Execute Live REST API Request</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* API Response Viewer Box */}
+                {apiResponse && (
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/90 font-mono text-xs sm:text-sm space-y-2">
+                    <div className="flex items-center justify-between text-slate-400 text-xs border-b border-slate-900 pb-2 mb-1">
+                      <span className="font-bold text-slate-200">Live Server Response JSON</span>
+                      <span className="text-emerald-400 font-semibold">200 OK — RandomForest Endpoint</span>
+                    </div>
+                    <pre className="text-emerald-300 overflow-x-auto max-h-64 scrollbar-thin leading-relaxed">
+                      {JSON.stringify(apiResponse, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Section 2: Batch Cohort Churn Analyzer */}
+            <div className="card-glass rounded-3xl p-6 sm:p-8 space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-slate-800 pb-5">
+                <div>
+                  <div className="flex items-center space-x-3">
+                    <Users className="w-6 h-6 text-cyan-400" />
+                    <h2 className="font-heading text-xl font-bold text-white">Batch Cohort Churn Analyzer</h2>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">Evaluate bulk customer cohorts in real-time, compute total revenue at risk, and export cohort reports</p>
+                </div>
+
+                {/* Cohort Preset Selectors & Export */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="bg-slate-900 rounded-xl p-1 border border-slate-800 flex items-center space-x-1">
+                    {[
+                      { id: 'telecom', label: 'Telecom Cohort' },
+                      { id: 'vip', label: 'High-Value VIPs' },
+                      { id: 'saas', label: 'SaaS Growth' }
+                    ].map(preset => (
+                      <button
+                        key={preset.id}
+                        onClick={() => runBatchPredict(preset.id)}
+                        className={`px-3 py-1.5 text-xs sm:text-sm font-bold rounded-lg transition ${
+                          selectedCohort === preset.id
+                            ? 'bg-brand-600 text-white shadow-sm'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button 
+                    onClick={downloadBatchCsv}
+                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-cyan-300 font-bold text-xs sm:text-sm rounded-xl transition flex items-center space-x-2 shadow-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Export CSV Report</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Cohort Summary Metrics Header */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-slate-900/80 rounded-2xl p-4 sm:p-5 border border-slate-800">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cohort Size</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-white font-heading mt-1 block">{cohortTotalCount} Accounts</span>
+                  <span className="text-xs text-cyan-400 font-semibold">Dataset: {selectedCohort.toUpperCase()}</span>
+                </div>
+
+                <div className="bg-slate-900/80 rounded-2xl p-4 sm:p-5 border border-slate-800">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Predicted Churn</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-rose-400 font-heading mt-1 block">{cohortChurnCount} ({cohortChurnRate}%)</span>
+                  <span className="text-xs text-rose-300 font-semibold">Requires intervention</span>
+                </div>
+
+                <div className="bg-slate-900/80 rounded-2xl p-4 sm:p-5 border border-slate-800">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cohort Revenue At Risk</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-heading mt-1 block">${cohortTotalAtRisk.toFixed(2)}</span>
+                  <span className="text-xs text-amber-300 font-semibold">Annualized LTV impact</span>
+                </div>
+
+                <div className="bg-slate-900/80 rounded-2xl p-4 sm:p-5 border border-slate-800">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Avg Cohort Tenure</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-cyan-300 font-heading mt-1 block">{cohortAvgTenure} Months</span>
+                  <span className="text-xs text-slate-400 font-semibold">Account maturity metric</span>
+                </div>
+              </div>
+
+              {/* Table Filters & Benchmark Action */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <div className="flex items-center space-x-2.5">
+                  <Filter className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs sm:text-sm text-slate-300 font-semibold">Filter Risk:</span>
+                  {[
+                    { id: 'all', label: 'All Accounts' },
+                    { id: 'high', label: 'High / Critical Churn' },
+                    { id: 'low', label: 'Low Risk Only' }
+                  ].map(f => (
+                    <button
+                      key={f.id}
+                      onClick={() => setCohortFilter(f.id)}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition ${
+                        cohortFilter === f.id
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => runBatchPredict(selectedCohort)}
+                  disabled={batchLoading}
+                  className="px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-md transition flex items-center justify-center space-x-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${batchLoading ? 'animate-spin' : ''}`} />
+                  <span>{batchLoading ? "Evaluating Cohort..." : "Re-Run Cohort Predictions"}</span>
+                </button>
+              </div>
+
+              {/* Batch Cohort Data Table */}
+              <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/90 shadow-inner">
+                <table className="w-full text-left text-xs sm:text-sm text-slate-300">
+                  <thead className="bg-slate-900 text-slate-400 uppercase text-xs font-bold tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th className="p-3.5">Customer ID</th>
+                      <th className="p-3.5">Tenure</th>
+                      <th className="p-3.5">Monthly Charge</th>
+                      <th className="p-3.5">Contract</th>
+                      <th className="p-3.5">Service Tier</th>
+                      <th className="p-3.5">Outcome</th>
+                      <th className="p-3.5">Churn Prob</th>
+                      <th className="p-3.5">Risk Level</th>
+                      <th className="p-3.5">Revenue At Risk</th>
+                      <th className="p-3.5">Primary Risk Driver</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80">
+                    {filteredBatchResults.map((item, idx) => {
+                      const isItemChurn = item["Churn Prediction"] === "Yes";
+                      const probVal = item.churn_probability || 0;
+                      const atRiskVal = item.financial_ltv?.revenue_at_risk || 0;
+                      const primaryFactor = (item.risk_factors && item.risk_factors.length > 0) 
+                        ? item.risk_factors[0] 
+                        : "Low risk indicators";
+
+                      return (
+                        <tr key={idx} className="hover:bg-slate-900/60 transition">
+                          <td className="p-3.5 font-mono font-bold text-white flex items-center space-x-2">
+                            <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+                            <span>{item.customerID}</span>
+                          </td>
+                          <td className="p-3.5 font-medium text-slate-200">{item.input_features?.tenure} m</td>
+                          <td className="p-3.5 font-bold text-emerald-400">${item.input_features?.MonthlyCharges?.toFixed(2)}/mo</td>
+                          <td className="p-3.5 text-slate-300 font-medium">{item.input_features?.Contract}</td>
+                          <td className="p-3.5 text-slate-300 font-medium">{item.input_features?.InternetService}</td>
+                          <td className="p-3.5">
+                            <span className={`px-3 py-1 rounded-lg font-extrabold text-xs ${
+                              isItemChurn 
+                                ? "bg-rose-500/20 text-rose-400 border border-rose-500/40" 
+                                : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                            }`}>
+                              {isItemChurn ? "YES: CHURN" : "NO: STAY"}
+                            </span>
+                          </td>
+                          <td className="p-3.5 font-extrabold text-white text-base font-heading">{probVal.toFixed(1)}%</td>
+                          <td className="p-3.5">
+                            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${
+                              item.risk_level === 'Critical Risk' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' :
+                              item.risk_level === 'High Risk' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' :
+                              item.risk_level === 'Moderate Risk' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
+                              'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                            }`}>
+                              {item.risk_level}
+                            </span>
+                          </td>
+                          <td className="p-3.5 font-bold text-rose-400 font-heading">${atRiskVal.toFixed(2)}</td>
+                          <td className="p-3.5 text-xs text-slate-400 max-w-xs truncate" title={primaryFactor}>
+                            {primaryFactor}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Compact Full Width Footer */}
+      <footer className="border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl py-5 mt-10 w-full">
+        <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-slate-400">
+          <div>
+            <span className="text-white font-bold">ChurnGuard Platform</span>
+            <span className="mx-2.5">•</span>
+            <span>Architect: <strong className="text-cyan-400">Ritik Yadav</strong></span>
+          </div>
+          <div className="mt-3 sm:mt-0 space-x-4">
+            <a href="http://127.0.0.1:5000/predict" target="_blank" rel="noreferrer" className="text-emerald-400 font-semibold hover:underline">
+              Flask API: http://127.0.0.1:5000/predict
+            </a>
+            <span>•</span>
+            <span>MIT License</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+env/
+.env
+*.egg-info/
+.DS_Store
+.vscode/
+.idea/
+
+# NOTE: src/model/model.joblib and model.tar.gz are intentionally
+# NOT ignored - they're checked in so the local demo works immediately
+# after cloning, without needing to retrain first.
+
+node_modules/
+dist/
+customer-churn-prediction-aws-ml/
+
