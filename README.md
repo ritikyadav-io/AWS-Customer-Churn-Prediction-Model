@@ -101,7 +101,7 @@ business act before a customer actually leaves.
 ## Getting started (local demo, no AWS needed)
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
+git clone https://github.com/ritikyadav-io/AWS-Customer-Churn-Prediction-Model
 cd <your-repo>
 pip install -r requirements.txt
 
