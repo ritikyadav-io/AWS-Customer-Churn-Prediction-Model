@@ -10,9 +10,7 @@ same code is also ready to deploy on real AWS infrastructure (S3 → Glue →
 SageMaker → Lambda → API Gateway) when you want the production version —
 see [`docs/STEP_BY_STEP_GUIDE.md`](docs/STEP_BY_STEP_GUIDE.md).
 
-![CI](https://github.com/<your-username>/<your-repo>/actions/workflows/ci.yml/badge.svg)
-![Python](https://img.shields.io/badge/python-3.11-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+
 
 ---
 
